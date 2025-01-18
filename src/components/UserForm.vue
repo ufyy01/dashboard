@@ -24,6 +24,7 @@ import { toast } from "./ui/toast";
 
 function onSubmit(values: any, { resetForm }: { resetForm: Function }) {
 	const userStore = useUserStore();
+	console.log(values);
 	userStore.addUser(values);
 
 	resetForm();

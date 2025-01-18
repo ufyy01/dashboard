@@ -80,6 +80,7 @@ const deleteUser = () => {
 };
 
 const onSubmit = (values: any) => {
+	console.log(values);
 	userStore.updateUser(props.user, values);
 	toast({
 		description: "User profile updated",

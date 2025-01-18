@@ -108,6 +108,7 @@
 		<div
 			class="min-h-[120px] max-h-[150px] px-2 pt-2 overflow-y-auto"
 			contenteditable="true"
+			data-gramm="false"
 			ref="editor"
 			@input="onInput"></div>
 	</div>
@@ -147,12 +148,9 @@ watch(
 
 function onInput(): void {
 	const value = editor.value?.innerHTML || "";
-
-	// Emit updated content to parent
 	emit("update:modelValue", value);
 }
 
-// Toggle styles for the selected text
 function toggleStyle(style: string, value?: string): void {
 	const selection = window.getSelection();
 	if (!selection || selection.rangeCount === 0) return;
@@ -163,56 +161,48 @@ function toggleStyle(style: string, value?: string): void {
 	if (!parentElement) return;
 
 	if (style === "highlight") {
-		// Check for highlight style
 		if (
 			parentElement.tagName === "SPAN" &&
 			parentElement.style.backgroundColor === value
 		) {
-			// Remove highlight
-			removeStyle(range, parentElement);
+			removeStyle(range, parentElement); // Remove highlight
 		} else {
-			// Apply highlight
-			applyStyle(range, "SPAN", value);
+			applyStyle(range, "span", value); // Apply highlight
 		}
 	} else {
-		// Check for other styles (e.g., bold, italic, underline)
 		const tag = styleToTag(style);
-		if (parentElement.tagName === tag) {
-			// Remove the style
-			removeStyle(range, parentElement);
+		if (parentElement.tagName.toLowerCase() === tag) {
+			removeStyle(range, parentElement); // Remove style
 		} else {
-			// Apply the style
-			applyStyle(range, tag);
+			applyStyle(range, tag); // Apply style
 		}
 	}
 }
 
-// Convert style commands to HTML tags
 function styleToTag(style: string): string {
-	switch (style) {
-		case "bold":
-			return "B";
-		case "italic":
-			return "I";
-		case "underline":
-			return "U";
-		case "strikethrough":
-			return "S";
-		default:
-			return "";
-	}
+	const tagMap: Record<string, string> = {
+		bold: "b",
+		italic: "i",
+		underline: "u",
+		strikethrough: "s",
+	};
+
+	return tagMap[style] || "";
 }
 
-// Apply a style to the selected text
 function applyStyle(range: Range, tag: string, value?: string): void {
+	if (!range || !tag) return;
+
 	const element = document.createElement(tag);
-	if (tag === "SPAN" && value) {
+	if (tag === "span" && value) {
 		element.style.backgroundColor = value;
 	}
-	element.appendChild(range.extractContents());
+
+	const extractedContent = range.extractContents();
+	if (!extractedContent.textContent?.trim()) return;
+	element.appendChild(extractedContent);
 	range.insertNode(element);
 
-	// Move the caret to the end of the newly inserted element
 	const newRange = document.createRange();
 	newRange.setStartAfter(element);
 	newRange.collapse(true);
@@ -222,20 +212,20 @@ function applyStyle(range: Range, tag: string, value?: string): void {
 	selection?.addRange(newRange);
 }
 
-// Remove a style by unwrapping the parent element
 function removeStyle(range: Range, parentElement: HTMLElement): void {
-	while (parentElement.firstChild) {
-		parentElement.parentNode?.insertBefore(
-			parentElement.firstChild,
-			parentElement
-		);
-	}
-	parentElement.remove();
+	if (!parentElement || !parentElement.parentNode) return;
 
-	// Restore the caret position
+	const parentNode = parentElement.parentNode;
+
+	while (parentElement.firstChild) {
+		parentNode.insertBefore(parentElement.firstChild, parentElement);
+	}
+
+	parentNode.removeChild(parentElement);
+
 	const selection = window.getSelection();
 	const newRange = document.createRange();
-	newRange.setStart(range.startContainer, range.startOffset);
+	newRange.setStart(range.endContainer, range.endOffset);
 	newRange.collapse(true);
 
 	selection?.removeAllRanges();

@@ -35,7 +35,7 @@
 							</DialogDescription>
 						</DialogHeader>
 						<DialogClose class="text-center" asChild>
-							<Button type="button" class="bg-destructive" @click="deleteUser"
+							<Button type="submit" class="bg-destructive" @click="deleteUser"
 								>Delete</Button
 							>
 						</DialogClose>
@@ -80,10 +80,11 @@ const deleteUser = () => {
 	toast({
 		description: "User deleted successfully",
 	});
+
+	window.location.reload();
 };
 
 const onSubmit = (values: any) => {
-	console.log(values);
 	userStore.updateUser(props.user, values);
 	toast({
 		description: "User profile updated",

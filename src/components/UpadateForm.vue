@@ -34,11 +34,11 @@
 								profile.
 							</DialogDescription>
 						</DialogHeader>
-						<DialogFooter class="text-center" asChild>
+						<DialogClose class="text-center" asChild>
 							<Button type="button" class="bg-destructive" @click="deleteUser"
 								>Delete</Button
 							>
-						</DialogFooter>
+						</DialogClose>
 					</DialogContent>
 				</Dialog>
 			</div>
@@ -66,6 +66,7 @@ import { Icon } from "@iconify/vue/dist/iconify.js";
 import FormBody from "./FormBody.vue";
 import Button from "./ui/button/Button.vue";
 import { toast } from "./ui/toast";
+import DialogClose from "./ui/dialog/DialogClose.vue";
 
 const props = defineProps<{
 	user: number;
@@ -77,6 +78,9 @@ const userDetail = computed(() => userStore.getUser(props.user));
 
 const deleteUser = () => {
 	userStore.removeUser(props.user);
+	toast({
+		description: "User deleted successfully",
+	});
 };
 
 const onSubmit = (values: any) => {
